@@ -1,0 +1,66 @@
+{
+  "name": "clinicheck",
+  "version": "0.1.0",
+  "description": "Safety checks for health-related LLM replies. A zero-dependency TypeScript SDK and CLI.",
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "bin": {
+    "clinicheck": "dist/cli.js"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./matchers": {
+      "types": "./dist/matchers.d.ts",
+      "import": "./dist/matchers.js",
+      "require": "./dist/matchers.cjs"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsup && chmod +x dist/cli.js 2>/dev/null || true",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "prepublishOnly": "npm run build && npm test"
+  },
+  "keywords": [
+    "llm",
+    "ai",
+    "healthcare",
+    "safety",
+    "testing",
+    "evals",
+    "guardrails",
+    "chatbot",
+    "cli"
+  ],
+  "author": "Saksham Kachhawaha",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sakshamkachhawaha/clinicheck.git"
+  },
+  "bugs": {
+    "url": "https://github.com/sakshamkachhawaha/clinicheck/issues"
+  },
+  "homepage": "https://github.com/sakshamkachhawaha/clinicheck#readme",
+  "engines": {
+    "node": ">=18"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.6",
+    "@vitest/coverage-v8": "^5.1.1",
+    "tsup": "^9.0.0",
+    "typescript": "^5.9.3",
+    "vitest": "^5.1.1"
+  }
+}
