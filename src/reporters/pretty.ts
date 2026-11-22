@@ -24,7 +24,7 @@ export function formatPretty(
   cases: TestCaseResult[],
   options?: PrettyReporterOptions
 ): string {
-  const version = options?.version ?? '0.1.0';
+  const version = options?.version ?? '0.2.0';
   const failOn = options?.failOn ?? 'high';
   const useColor = options?.useColor ?? shouldUseColor();
 

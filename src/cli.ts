@@ -6,9 +6,11 @@ import { check, listRules } from './checker.js';
 import { redact } from './redact.js';
 import { formatPretty, type TestCaseResult } from './reporters/pretty.js';
 import { formatJson } from './reporters/json.js';
+import { formatMarkdown } from './reporters/markdown.js';
+import { loadConfig } from './config.js';
 import type { CheckOptions, Locale, Severity } from './types.js';
 
-const VERSION = '0.1.0';
+const VERSION = '0.2.0';
 const DISCLAIMER =
   'clinicheck performs heuristic text checks. It is not medical advice, not a medical device, and not a substitute for clinical review.';
 
@@ -180,28 +182,42 @@ export async function runCli(argv = process.argv.slice(2)): Promise<void> {
       printErrorAndExit('check requires text argument or "-" to read from stdin');
     }
 
+    let loadedConfig = {};
+    let configCustomRules = [];
+    try {
+      const loaded = loadConfig(parsed.values.config as string | undefined);
+      loadedConfig = loaded.config;
+      configCustomRules = loaded.customRules;
+    } catch (err: unknown) {
+      printErrorAndExit(err instanceof Error ? err.message : String(err));
+    }
+
     let outputText = textArg;
     if (textArg === '-') {
       outputText = await readStdin();
     }
 
+    const cfg = loadedConfig as Record<string, unknown>;
     const inputText = parsed.values.input as string | undefined;
-    const failOn = (parsed.values['fail-on'] as Severity | undefined) ?? 'high';
-    const locale = (parsed.values.locale as Locale | undefined) ?? 'GLOBAL';
+    const failOn = (parsed.values['fail-on'] as Severity | undefined) ?? (cfg.failOn as Severity) ?? 'high';
+    const locale = (parsed.values.locale as Locale | undefined) ?? (cfg.locale as Locale) ?? 'GLOBAL';
     const format = (parsed.values.format as string) || 'pretty';
 
     const rules = parsed.values.rules
       ? (parsed.values.rules as string).split(',').map((s) => s.trim())
-      : undefined;
+      : (cfg.rules as string[] | undefined);
     const disable = parsed.values.disable
       ? (parsed.values.disable as string).split(',').map((s) => s.trim())
-      : undefined;
+      : (cfg.disable as string[] | undefined);
 
     const checkOptions: CheckOptions = {
       failOn,
       locale,
       rules,
       disable,
+      severityOverrides: cfg.severityOverrides as Record<string, Severity> | undefined,
+      piiInInput: cfg.piiInInput as 'ignore' | 'warn' | undefined,
+      customRules: configCustomRules,
     };
 
     const result = check({ input: inputText, output: outputText }, checkOptions);
@@ -214,6 +230,8 @@ export async function runCli(argv = process.argv.slice(2)): Promise<void> {
 
     if (format === 'json') {
       console.log(formatJson([caseResult], VERSION));
+    } else if (format === 'markdown') {
+      console.log(formatMarkdown([caseResult], VERSION));
     } else {
       console.log(formatPretty([caseResult], { version: VERSION, failOn }));
     }
@@ -243,6 +261,16 @@ export async function runCli(argv = process.argv.slice(2)): Promise<void> {
     const filePath = parsed.positionals[0];
     if (!filePath) {
       printErrorAndExit('run requires a file path argument');
+    }
+
+    let loadedConfig = {};
+    let configCustomRules = [];
+    try {
+      const loaded = loadConfig(parsed.values.config as string | undefined);
+      loadedConfig = loaded.config;
+      configCustomRules = loaded.customRules;
+    } catch (err: unknown) {
+      printErrorAndExit(err instanceof Error ? err.message : String(err));
     }
 
     const resolvedPath = path.resolve(process.cwd(), filePath);
@@ -278,22 +306,26 @@ export async function runCli(argv = process.argv.slice(2)): Promise<void> {
       printErrorAndExit('Test cases file must contain an array or an object with a "cases" array');
     }
 
-    const failOn = (parsed.values['fail-on'] as Severity | undefined) ?? 'high';
-    const locale = (parsed.values.locale as Locale | undefined) ?? 'GLOBAL';
+    const cfg = loadedConfig as Record<string, unknown>;
+    const failOn = (parsed.values['fail-on'] as Severity | undefined) ?? (cfg.failOn as Severity) ?? 'high';
+    const locale = (parsed.values.locale as Locale | undefined) ?? (cfg.locale as Locale) ?? 'GLOBAL';
     const format = (parsed.values.format as string) || 'pretty';
 
     const rules = parsed.values.rules
       ? (parsed.values.rules as string).split(',').map((s) => s.trim())
-      : undefined;
+      : (cfg.rules as string[] | undefined);
     const disable = parsed.values.disable
       ? (parsed.values.disable as string).split(',').map((s) => s.trim())
-      : undefined;
+      : (cfg.disable as string[] | undefined);
 
     const checkOptions: CheckOptions = {
       failOn,
       locale,
       rules,
       disable,
+      severityOverrides: cfg.severityOverrides as Record<string, Severity> | undefined,
+      piiInInput: cfg.piiInInput as 'ignore' | 'warn' | undefined,
+      customRules: configCustomRules,
     };
 
     const caseResults: TestCaseResult[] = [];
@@ -348,6 +380,8 @@ export async function runCli(argv = process.argv.slice(2)): Promise<void> {
 
     if (format === 'json') {
       console.log(formatJson(caseResults, VERSION));
+    } else if (format === 'markdown') {
+      console.log(formatMarkdown(caseResults, VERSION));
     } else {
       console.log(formatPretty(caseResults, { version: VERSION, failOn }));
     }
