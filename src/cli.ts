@@ -10,7 +10,7 @@ import { formatMarkdown } from './reporters/markdown.js';
 import { loadConfig } from './config.js';
 import type { CheckOptions, Locale, Severity } from './types.js';
 
-const VERSION = '0.2.0';
+const VERSION = '0.2.1';
 const DISCLAIMER =
   'clinicheck performs heuristic text checks. It is not medical advice, not a medical device, and not a substitute for clinical review.';
 

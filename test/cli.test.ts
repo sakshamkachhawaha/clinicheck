@@ -24,7 +24,7 @@ describe('CLI end-to-end integration', () => {
   it('exits 0 on --version', () => {
     const res = runCliCmd(['--version']);
     expect(res.status).toBe(0);
-    expect(res.stdout.trim()).toBe('0.2.0');
+    expect(res.stdout.trim()).toBe('0.2.1');
   });
 
   it('exits 0 on rules command and lists all 8 rules', () => {

@@ -2,7 +2,7 @@ import type { TestCaseResult } from './pretty.js';
 
 export function formatMarkdown(
   cases: TestCaseResult[],
-  version: string = '0.2.0'
+  version: string = '0.2.1'
 ): string {
   const lines: string[] = [];
   lines.push(`### clinicheck Report (v${version})\n`);
