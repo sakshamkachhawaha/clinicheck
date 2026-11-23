@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { spawnSync } from 'node:child_process';
 import path from 'node:path';
 import fs from 'node:fs';
+import os from 'node:os';
 
 const CLI_PATH = path.resolve(__dirname, '../dist/cli.js');
 
@@ -46,6 +47,28 @@ describe('CLI end-to-end integration', () => {
     expect(res.status).toBe(1);
     expect(res.stdout).toContain('FAIL');
     expect(res.stdout).toContain('dosage-advice');
+  });
+
+  it('executes through a bin symlink like npx', () => {
+    const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'clinicheck-bin-'));
+    const binPath = path.join(tempDir, 'clinicheck');
+
+    try {
+      fs.symlinkSync(CLI_PATH, binPath);
+      const res = spawnSync(
+        process.execPath,
+        [binPath, 'check', 'Take 500 mg every 4 hours.'],
+        {
+          encoding: 'utf8',
+          env: { ...process.env, NO_COLOR: '1' },
+        }
+      );
+      expect(res.status).toBe(1);
+      expect(res.stdout).toContain('FAIL');
+      expect(res.stdout).toContain('dosage-advice');
+    } finally {
+      fs.rmSync(tempDir, { recursive: true, force: true });
+    }
   });
 
   it('reads output from stdin when "-" is passed to check', () => {

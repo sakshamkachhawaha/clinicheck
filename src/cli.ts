@@ -392,7 +392,4 @@ export async function runCli(argv = process.argv.slice(2)): Promise<void> {
   printErrorAndExit(`Unknown command '${command}'. Use clinicheck --help for available commands.`);
 }
 
-// Run directly if invoked as main module
-if (import.meta.url === `file://${process.argv[1]}`) {
-  runCli();
-}
+runCli();
